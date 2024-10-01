@@ -1,4 +1,4 @@
-FROM openkbs/jdk-mvn-py3
+FROM artifactory.wikia-inc.com/dockerhub/eclipse-temurin:17.0.9_9-jdk-jammy
 
 # Shared indexing works best
 # when you use the IDE
@@ -7,7 +7,7 @@ FROM openkbs/jdk-mvn-py3
 ARG IDE=ideaIU
 ARG IDE_SHORT=idea
 ARG IDE_CODE=idea
-ARG IDE_VERSION=2023.2
+ARG IDE_VERSION=2024.1.6
 
 # persist build args for runtime
 # see https://www.saltycrane.com/blog/2021/04/buildtime-vs-runtime-environment-variables-nextjs-docker/#setting-dynamic-buildtime-environment-variables-that-are-available-at-runtime-also
@@ -17,7 +17,7 @@ ENV IDE_CODE=$IDE_CODE
 ENV IDE_VERSION=$IDE_VERSION
 
 ARG IDE_TAR=${IDE}-${IDE_VERSION}.tar.gz
-ARG CDN_LAYOUT_TOOL_VERSION=0.8.65
+ARG IJ_SHARED_INDEXES_TOOL_VERSION=0.9.9
 
 # Runtime variables
 ENV INDEXES_CDN_URL=http://localhost:3000/project
@@ -29,14 +29,16 @@ ENV SHARED_INDEX_BASE="/shared-index"
 USER root
 WORKDIR /opt
 
+RUN apt-get update && \
+    apt-get install -y zip git && \
+    rm -rf /var/lib/apt/lists/*
+
 # Set up folders
 RUN mkdir -p /etc/idea && \
     mkdir -p /etc/idea/config && \
     mkdir -p /etc/idea/log && \
     mkdir -p /etc/idea/system && \
-    mkdir ${SHARED_INDEX_BASE} && \
-    mkdir ${SHARED_INDEX_BASE}/output && \
-    mkdir ${SHARED_INDEX_BASE}/temp
+    mkdir ${SHARED_INDEX_BASE}
 
 # Install IntelliJ IDEA Ultimate
 RUN wget -nv https://download-cf.jetbrains.com/${IDE_CODE}/${IDE_TAR} && \
@@ -50,14 +52,18 @@ RUN wget -nv https://download-cf.jetbrains.com/${IDE_CODE}/${IDE_TAR} && \
     chmod -R 777 ${SHARED_INDEX_BASE} && \
     chmod -R 777 /etc/idea
 
-# Install cdn-layout-tool
-RUN wget https://packages.jetbrains.team/maven/p/ij/intellij-shared-indexes-public/com/jetbrains/intellij/indexing/shared/cdn-layout-tool/${CDN_LAYOUT_TOOL_VERSION}/cdn-layout-tool-${CDN_LAYOUT_TOOL_VERSION}.zip -O cdn-layout-tool.zip && \
-    unzip cdn-layout-tool.zip && \
-    rm cdn-layout-tool.zip && \
-    mv cdn-layout-tool-${CDN_LAYOUT_TOOL_VERSION} cdn-layout-tool
+# Install ij-shared-indexes-tool
+RUN wget https://packages.jetbrains.team/maven/p/ij/intellij-shared-indexes/com/jetbrains/intellij/indexing/shared/ij-shared-indexes-tool-cli/${IJ_SHARED_INDEXES_TOOL_VERSION}/ij-shared-indexes-tool-cli-${IJ_SHARED_INDEXES_TOOL_VERSION}.zip -O ij-shared-indexes-tool-cli.zip && \
+    unzip ij-shared-indexes-tool-cli.zip && \
+    rm ij-shared-indexes-tool-cli.zip && \
+    mv ij-shared-indexes-tool-cli-${IJ_SHARED_INDEXES_TOOL_VERSION} ij-shared-indexes-tool-cli
 
 
 COPY entrypoint.sh entrypoint.sh
+
+RUN useradd -u 955 -ms /bin/bash app
+USER app
+
 CMD ./entrypoint.sh
 
 # Comment out the CMD line and uncomment the following for testing

@@ -7,7 +7,7 @@ FROM artifactory.wikia-inc.com/dockerhub/eclipse-temurin:17.0.9_9-jdk-jammy
 ARG IDE=ideaIU
 ARG IDE_SHORT=idea
 ARG IDE_CODE=idea
-ARG IDE_VERSION=2024.1.6
+ARG IDE_VERSION=2024.2.3
 
 # persist build args for runtime
 # see https://www.saltycrane.com/blog/2021/04/buildtime-vs-runtime-environment-variables-nextjs-docker/#setting-dynamic-buildtime-environment-variables-that-are-available-at-runtime-also
@@ -17,7 +17,7 @@ ENV IDE_CODE=$IDE_CODE
 ENV IDE_VERSION=$IDE_VERSION
 
 ARG IDE_TAR=${IDE}-${IDE_VERSION}.tar.gz
-ARG IJ_SHARED_INDEXES_TOOL_VERSION=0.9.9
+ARG IJ_SHARED_INDEXES_TOOL_VERSION=0.9.11
 
 # Runtime variables
 ENV INDEXES_CDN_URL=http://localhost:3000/project

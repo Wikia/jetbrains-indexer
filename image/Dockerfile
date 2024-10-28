@@ -30,7 +30,7 @@ USER root
 WORKDIR /opt
 
 RUN apt-get update && \
-    apt-get install -y zip git && \
+    apt-get install -y zip git cmake && \
     rm -rf /var/lib/apt/lists/*
 
 # Set up folders
